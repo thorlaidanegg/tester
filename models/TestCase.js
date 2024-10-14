@@ -8,4 +8,4 @@ const testCaseSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.TestCase || mongoose.model('TestCase', testCaseSchema);
+export default mongoose.models?.TestCase || mongoose.model('TestCase', testCaseSchema);

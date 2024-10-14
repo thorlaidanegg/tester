@@ -8,4 +8,4 @@ const testScheduleSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },  // Current status
 });
 
-export default mongoose.models.TestSchedule || mongoose.model('TestSchedule', testScheduleSchema);
+export default mongoose.models?.TestSchedule || mongoose.model('TestSchedule', testScheduleSchema);

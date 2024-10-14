@@ -7,4 +7,4 @@ const emailNotificationSchema = new mongoose.Schema({
   sentAt: { type: Date },  // Date when the email was sent
 });
 
-export default mongoose.models.EmailNotification || mongoose.model('EmailNotification', emailNotificationSchema);
+export default mongoose.models?.EmailNotification || mongoose.model('EmailNotification', emailNotificationSchema);

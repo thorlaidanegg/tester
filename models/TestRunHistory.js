@@ -10,4 +10,4 @@ const testRunHistorySchema = new mongoose.Schema({
   scheduledRun: { type: Boolean, default: false },  // Whether it was a scheduled run
 });
 
-export default mongoose.models.TestRunHistory || mongoose.model('TestRunHistory', testRunHistorySchema);
+export default mongoose.models?.TestRunHistory || mongoose.model('TestRunHistory', testRunHistorySchema);

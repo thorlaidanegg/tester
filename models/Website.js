@@ -8,4 +8,4 @@ const websiteSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.Website || mongoose.model('Website', websiteSchema);
+export default mongoose.models?.Website || mongoose.model('Website', websiteSchema);
