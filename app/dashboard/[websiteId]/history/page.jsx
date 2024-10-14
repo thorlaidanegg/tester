@@ -99,10 +99,9 @@ export default function DashboardLayout() {
         <main className="flex w-full flex-col overflow-hidden">
           <div className="container relative">
             <section className="mx-auto py-8 sm:py-16 lg:py-20">
-              <h2 className="text-3xl font-bold tracking-tight">Dashboard Content</h2>
+              <h2 className="text-3xl font-bold tracking-tight">Dashboard History</h2>
               <p className="mt-4 text-muted-foreground">
-                Your main dashboard content goes here. You can add charts, tables, or any other
-                components as needed.
+                <h1>Current Path:{websiteId}</h1>
               </p>
             </section>
           </div>
