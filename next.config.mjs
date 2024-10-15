@@ -1,13 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    serverActions: true,
-  },
-  // Add this section:
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-    serverActions: true,
-  },
-}
+const nextConfig = {};
 
-export default nextConfig   
+export default nextConfig;

@@ -59,7 +59,7 @@ export default function LandingPage() {
           </div>
         ):(
           <div>
-            <Button onClick={signOut}>SignOut</Button> 
+            <Button onClick={signOut}>Sign Out</Button> 
           </div>
         )}
         
