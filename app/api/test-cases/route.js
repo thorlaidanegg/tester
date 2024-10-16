@@ -3,21 +3,29 @@ import { auth } from '@/auth';
 import TestCase from '@/models/TestCase';
 import Website from '@/models/Website';
 import connectMongo from '@/lib/db';
+import mongoose from 'mongoose';
 
-// GET route - Get all test cases
-export async function GET() {
+// GET route - Get all test cases for a specific website
+export async function GET(request) {
   try {
     const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Connect to MongoDB
+    const websiteId = request.nextUrl.searchParams.get('websiteId');
+    if (!websiteId) {
+      return NextResponse.json({ error: 'Website ID is required' }, { status: 400 });
+    }
+
+    // Validate if websiteId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(websiteId)) {
+      return NextResponse.json({ error: 'Invalid Website ID format' }, { status: 400 });
+    }
+
     await connectMongo();
 
-    // Fetch all test cases
-    const testCases = await TestCase.find().populate('website');
-
+    const testCases = await TestCase.find({ website: websiteId }).populate('website');
     return NextResponse.json(testCases);
   } catch (error) {
     console.error('Error fetching test cases:', error);
@@ -26,7 +34,6 @@ export async function GET() {
 }
 
 // POST route - Add a new test case
-// POST route - Add a new test case
 export async function POST(request) {
   try {
     const session = await auth();
@@ -34,15 +41,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { name, script, websiteId } = await request.json(); // Updated to get websiteId
+    const { name, script, websiteId } = await request.json();
     if (!name || !script || !websiteId) {
       return NextResponse.json({ error: 'Name, script, and websiteId are required' }, { status: 400 });
     }
 
-    // Connect to MongoDB
+    // Validate if websiteId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(websiteId)) {
+      return NextResponse.json({ error: 'Invalid Website ID format' }, { status: 400 });
+    }
+
     await connectMongo();
 
-    // Create a new test case document
     const newTestCase = new TestCase({ name, script, website: websiteId });
     await newTestCase.save();
 
@@ -53,20 +63,21 @@ export async function POST(request) {
   }
 }
 
-
 // DELETE route - Delete a test case by ID
-// DELETE route - Delete a test case by ID
-export async function DELETE(req) {
+export async function DELETE(request) {
   try {
-    const { id, websiteId } = await req.json(); // Get both id and websiteId from body
+    const { id, websiteId } = await request.json();
     if (!id || !websiteId) {
       return NextResponse.json({ error: 'Test case ID and websiteId are required' }, { status: 400 });
     }
 
-    // Connect to MongoDB
+    // Validate if websiteId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(websiteId)) {
+      return NextResponse.json({ error: 'Invalid Website ID format' }, { status: 400 });
+    }
+
     await connectMongo();
 
-    // Delete the test case by ID
     const deletedTestCase = await TestCase.findByIdAndDelete(id);
     if (!deletedTestCase) {
       return NextResponse.json({ error: 'Test case not found' }, { status: 404 });
@@ -78,4 +89,3 @@ export async function DELETE(req) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
