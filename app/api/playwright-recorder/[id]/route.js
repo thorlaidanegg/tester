@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import TestCase from '../../models/TestCase'; // Adjust the path as needed
+import TestCase from '@/models/TestCase'; // Adjust the path as needed
 
 // This is the API route handler for fetching test cases
 export async function GET(request) {
