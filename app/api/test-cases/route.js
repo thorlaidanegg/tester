@@ -89,3 +89,31 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function PUT(request) {
+  try {
+    // Parse the request body
+    const { id, name } = await request.json();
+
+    // Validate incoming data
+    if (!id || !name) {
+      return NextResponse.json({ error: 'Missing required data' }, { status: 400 });
+    }
+
+    // Establish MongoDB connection
+    await connectMongo();
+
+    // Find and update the test case by ID
+    const updatedTestCase = await TestCase.findByIdAndUpdate(id, { name }, { new: true });
+
+    if (!updatedTestCase) {
+      return NextResponse.json({ error: 'Test case not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Test case name updated successfully', updatedTestCase }, { status: 200 });
+
+  } catch (e) {
+    console.error('Error updating name:', e);
+    return NextResponse.json({ error: 'Failed to update the test case name' }, { status: 500 });
+  }
+}

@@ -4,6 +4,7 @@ import path from 'path';
 import mongoose from 'mongoose';
 import TestCase from '@/models/TestCase'; // Import your TestCase model
 import Website from '@/models/Website'; // Import your Website model if needed
+import connectMongo from '@/lib/db';
 
 export async function POST(request) {
   try {
@@ -64,3 +65,4 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Failed to stop recording and save the script' }, { status: 500 });
   }
 }
+
