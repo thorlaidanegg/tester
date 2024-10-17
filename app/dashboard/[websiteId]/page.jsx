@@ -4,6 +4,8 @@ import * as React from "react";
 import { ChevronDown, Menu, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import axios from 'axios';
+import { useRouter } from "next/navigation"; // for programmatic navigation
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,25 +17,48 @@ import {
 import {
   Select,
   SelectContent,
-  SelectItem,   
+  SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { usePathname } from "next/navigation";
 import SidebarContent from "@/components/Sidebar";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [websiteId, setWebsiteId] = React.useState("");
+  const [websites, setWebsites] = React.useState([]);
+  const [currentWebsiteName, setCurrentWebsiteName] = React.useState("");
   const pathname = usePathname();
+  const router = useRouter(); // for changing route
 
-  // Use useEffect to avoid the infinite re-render issue
+  const fetchWebsites = async () => {
+    try {
+      const response = await axios.get('/api/website');
+      const userData = response.data;
+      if (userData) {
+        setWebsites(userData.websites);
+        const id = pathname.split("/")[2]; // Assuming the ID is part of the URL
+        setWebsiteId(id); // Update websiteId based on current URL
+        // Find the current website name based on the URL ID
+        const currentWebsite = userData.websites.find((site) => site._id === id);
+        if (currentWebsite) {
+          setCurrentWebsiteName(currentWebsite.name); // Set current website name
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching websites:', error);
+    }
+  };
+
   React.useEffect(() => {
-    const id = pathname.split("/")[2]; // Assuming the ID is part of the URL
-    setWebsiteId(id); // Update websiteId only when pathname changes
+    fetchWebsites();
   }, [pathname]); // Re-run the effect when the pathname changes
 
+  const handleWebsiteChange = (newWebsiteId) => {
+    router.push(`/dashboard/${newWebsiteId}`); // Change the route to the new website ID
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -60,14 +85,16 @@ export default function DashboardLayout() {
           </Sheet>
           <div className="flex flex-1 items-center justify-between space-x-5 md:justify-end">
             <div className="w-full flex-1 md:w-auto md:flex-none">
-              <Select>
+              <Select onValueChange={handleWebsiteChange}>
                 <SelectTrigger className="w-full md:w-[200px]" id="website">
-                  <SelectValue placeholder="Select Website" />
+                  <SelectValue placeholder={currentWebsiteName || "Select Website"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="website1">Website 1</SelectItem>
-                  <SelectItem value="website2">Website 2</SelectItem>
-                  <SelectItem value="website3">Website 3</SelectItem>
+                  {websites.map((website) => (
+                    <SelectItem key={website._id} value={website._id}>
+                      {website.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -99,7 +126,7 @@ export default function DashboardLayout() {
         <main className="flex w-full flex-col overflow-hidden">
           <div className="container relative">
             <section className="mx-auto py-8 sm:py-16 lg:py-20">
-              <h2 className="text-3xl font-bold tracking-tight">Dashboard Content</h2>
+              <h2 className="text-3xl font-bold tracking-tight">{currentWebsiteName}</h2>
               <p className="mt-4 text-muted-foreground">
                 Your main dashboard content goes here. You can add charts, tables, or any other
                 components as needed.
@@ -109,5 +136,5 @@ export default function DashboardLayout() {
         </main>
       </div>
     </div>
-  )
+  );
 }
