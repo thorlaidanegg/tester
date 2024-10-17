@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import mongoose from 'mongoose';
+import TestCase from '@/models/TestCase'; // Import your TestCase model
+import Website from '@/models/Website'; // Import your Website model if needed
 
-export async function GET(request) {
+export async function POST(request) {
   try {
+    const { websiteName, websiteUrl, websiteId } = await request.json();
+
+    // Validate incoming data
+    if (!websiteName || !websiteUrl || !websiteId) {
+      return NextResponse.json({ error: 'Missing required data' }, { status: 400 });
+    }
+
     // Path to the Playwright recordings directory
     const recordingsDir = path.join(process.cwd(), 'playwright-recordings');
 
@@ -13,10 +23,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Recordings directory not found' }, { status: 404 });
     }
 
-    // Get the list of test files
+    // Get the most recent .spec.js file
     const files = await fs.readdir(recordingsDir);
-
-    // Filter for '.spec.js' files and sort them by modification time
     const mostRecentFile = (
       await Promise.all(
         files
@@ -37,18 +45,19 @@ export async function GET(request) {
     // Read the content of the most recent test file
     const testScript = await fs.readFile(outputFilePath, 'utf-8');
 
-    // Save the script to MongoDB (assuming you have the MongoDB logic here)
-    const newTestCase = {
-      name: `Test Case - ${Date.now()}`,
+    // Save the script to MongoDB
+    const newTestCase = new TestCase({
+      name: `Test Case - ${websiteName}`,
       script: testScript,
-      website: '670cf0dbef03e1ca43c3f784', // Replace with your website ID
-    };
+      website: websiteId, // The ID of the associated website
+    });
 
-    // Optionally, clean up by deleting the test script file
+    await newTestCase.save();
+
+    // Optionally, delete the test script file after saving
     await fs.unlink(outputFilePath);
 
-    // Return the saved test case to the frontend
-    return NextResponse.json({ script: newTestCase, message: 'Recording stopped and saved' }, { status: 200 });
+    return NextResponse.json({ script: newTestCase.script, message: 'Recording stopped and saved' }, { status: 200 });
 
   } catch (error) {
     console.error('Error stopping recording:', error);

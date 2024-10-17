@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
 
 export default function TestCasesPage() {
   const { toast } = useToast();
@@ -14,6 +15,7 @@ export default function TestCasesPage() {
   const [websites, setWebsites] = useState([]);
   const [currentWebsiteUrl , setCurrentWebsiteUrl] = useState()
   const [currentWebsiteName , setCurrentWebsiteName] = useState()
+  const pathname = usePathname();
   // const websiteId = '670cf0dbef03e1ca43c3f784'; // Example hardcoded website ID
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function TestCasesPage() {
 
   const openTestCaseRecording = async () => {
     try {
-      const url = currentWebsiteUrl || 'https://medlr.in'; // The website you want to test
+      const url = currentWebsiteUrl; // The website you want to test
       const response = await axios.get(`/api/start-recording?url=${encodeURIComponent(url)}`);
       setIsRecording(true);
       // toast.success('Recording started');
@@ -49,31 +51,32 @@ export default function TestCasesPage() {
   };
 
   const stopRecording = async () => {
-    try {
-      const response = await axios.get(`/api/stop-recording/${currentWebsiteName}/${currentWebsiteUrl}`);
-      if (response.status === 200) {
-        setGeneratedScript(response.data.script);
-        console.log(response.data.script)
-        setIsRecording(false);
-        // toast.success('Recording stopped and saved');
-        // Fetch updated test cases after stopping recording
-        fetchTestCases(websiteId);
-      } else {
-        console.error('Error stopping recording:', response.data.error);
-        // toast.error('Failed to stop recording');
-      }
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-      if (error.response && error.response.status === 400) {
-        // toast.error('Recording process not found. The browser might have been closed.');
-        setIsRecording(false);
-      } else {
-        // toast.error('Failed to stop recording');
-      }
-      // Fetch test cases anyway, in case a new one was saved
+  try {
+    console.log(currentWebsiteName)
+    console.log(currentWebsiteUrl)
+    console.log(websiteId)
+    const response = await axios.post('/api/stop-recording', {
+      websiteName: currentWebsiteName,
+      websiteUrl: currentWebsiteUrl,
+      websiteId,  // Passing the website ID as well
+    });
+
+    if (response.status === 200) {
+      setGeneratedScript(response.data.script);
+      setIsRecording(false);
       fetchTestCases(websiteId);
+    } else {
+      console.error('Error stopping recording:', response.data.error);
     }
-  };
+  } catch (error) {
+    console.error('Error stopping recording:', error);
+    if (error.response && error.response.status === 400) {
+      setIsRecording(false);
+    }
+    fetchTestCases(websiteId);
+  }
+};
+
 
   const fetchWebsites = async () => {
     try {
@@ -86,7 +89,8 @@ export default function TestCasesPage() {
         // Find the current website name based on the URL ID
         const currentWebsite = userData.websites.find((site) => site._id === id);
         if (currentWebsite) {
-          setCurrentWebsiteUrl(currentWebsite.url); // Set current website name
+          setCurrentWebsiteUrl(currentWebsite.url); // Set current website url
+          setCurrentWebsiteName(currentWebsite.name); // Set current website name
         }
       }
     } catch (error) {
@@ -115,7 +119,7 @@ export default function TestCasesPage() {
       {generatedScript && (
         <div>
           <h3>Generated Playwright Script:</h3>
-          {/* <pre>{generatedScript}</pre> */}
+          <pre>{generatedScript}</pre>
         </div>
       )}
     </div>
